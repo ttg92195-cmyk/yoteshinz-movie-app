@@ -244,9 +244,9 @@ export default function MoviesPage() {
             <p className="text-gray-400 text-sm mb-4">
               {filteredMovies.length} movies found
             </p>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-2">
               {filteredMovies.map(movie => (
-                <MovieCard key={movie.id} movie={movie} size="sm" showGenre />
+                <MovieCard key={movie.id} movie={movie} size="xs" showGenre fullWidth />
               ))}
             </div>
           </>

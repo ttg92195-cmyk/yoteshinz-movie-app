@@ -586,12 +586,12 @@ export default function HomePage() {
             </div>
 
             {searchQuery && searchResults.length > 0 && (
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-3 gap-2">
                 {searchResults.map(movie => (
                   movie.isSeries ? (
-                    <SeriesCard key={movie.id} series={movie} size="xs" showGenre />
+                    <SeriesCard key={movie.id} series={movie} size="xs" showGenre fullWidth />
                   ) : (
-                    <MovieCard key={movie.id} movie={movie} size="xs" showGenre />
+                    <MovieCard key={movie.id} movie={movie} size="xs" showGenre fullWidth />
                   )
                 ))}
               </div>

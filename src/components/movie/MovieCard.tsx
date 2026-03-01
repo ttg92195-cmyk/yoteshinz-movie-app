@@ -11,21 +11,24 @@ interface MovieCardProps {
   size?: 'xs' | 'sm' | 'md' | 'lg'
   showTitle?: boolean
   showGenre?: boolean
+  fullWidth?: boolean  // For grid layouts
 }
 
-export function MovieCard({ movie, size = 'md', showTitle = true, showGenre = false }: MovieCardProps) {
+export function MovieCard({ movie, size = 'md', showTitle = true, showGenre = false, fullWidth = false }: MovieCardProps) {
+  // For grid layouts, use w-full with aspect ratio
   const sizeClasses = {
-    xs: 'w-[100px]',   // Extra small for 3 per row on mobile
-    sm: 'w-[110px]',   // Small for horizontal scroll
-    md: 'w-[130px]',   // Medium
-    lg: 'w-[160px]',   // Large for featured
+    xs: fullWidth ? 'w-full' : 'w-[100px]',   // Extra small for 3 per row on mobile
+    sm: fullWidth ? 'w-full' : 'w-[110px]',   // Small for horizontal scroll
+    md: fullWidth ? 'w-full' : 'w-[130px]',   // Medium
+    lg: fullWidth ? 'w-full' : 'w-[160px]',   // Large for featured
   }
 
+  // Use aspect ratio for grid cards, fixed height for horizontal scroll
   const heightClasses = {
-    xs: 'h-[150px]',
-    sm: 'h-[165px]',
-    md: 'h-[195px]',
-    lg: 'h-[240px]',
+    xs: fullWidth ? 'aspect-[2/3]' : 'h-[150px]',
+    sm: fullWidth ? 'aspect-[2/3]' : 'h-[165px]',
+    md: fullWidth ? 'aspect-[2/3]' : 'h-[195px]',
+    lg: fullWidth ? 'aspect-[2/3]' : 'h-[240px]',
   }
 
   const titleSizeClasses = {

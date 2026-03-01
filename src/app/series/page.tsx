@@ -215,9 +215,9 @@ export default function SeriesPage() {
             <p className="text-gray-400 text-sm mb-4">
               {filteredSeries.length} series found
             </p>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-2">
               {filteredSeries.map(s => (
-                <SeriesCard key={s.id} series={s} size="sm" showGenre />
+                <SeriesCard key={s.id} series={s} size="xs" showGenre fullWidth />
               ))}
             </div>
           </>

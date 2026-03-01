@@ -153,20 +153,22 @@ export function MovieDetailContent({ movieId, type }: MovieDetailContentProps) {
   return (
     <div className="min-h-screen bg-black pb-20">
       {/* Backdrop */}
-      <div className="relative h-64 md:h-80">
+      <div className="relative h-56 md:h-72">
         {movie.backdropUrl ? (
-          <Image
-            src={movie.backdropUrl}
-            alt={movie.title}
-            fill
-            className="object-cover"
-            priority
-            unoptimized
-          />
+          <>
+            <Image
+              src={movie.backdropUrl}
+              alt={movie.title}
+              fill
+              className="object-cover"
+              priority
+              unoptimized
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
+          </>
         ) : (
-          <div className="w-full h-full bg-secondary" />
+          <div className="w-full h-full bg-gradient-to-b from-gray-900 to-black" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
         
         {/* Back Button */}
         <button
@@ -190,11 +192,11 @@ export function MovieDetailContent({ movieId, type }: MovieDetailContentProps) {
       </div>
 
       {/* Content */}
-      <div className="relative -mt-20 px-4">
+      <div className="relative -mt-16 px-4">
         {/* Poster and Info */}
-        <div className="flex gap-4">
-          <div className="w-28 md:w-32 flex-shrink-0">
-            <div className="relative aspect-[2/3] rounded-lg overflow-hidden shadow-xl">
+        <div className="flex gap-3">
+          <div className="w-24 md:w-28 flex-shrink-0">
+            <div className="relative aspect-[2/3] rounded-lg overflow-hidden shadow-xl border border-white/10">
               {movie.posterUrl ? (
                 <Image
                   src={movie.posterUrl}
@@ -215,8 +217,8 @@ export function MovieDetailContent({ movieId, type }: MovieDetailContentProps) {
             </div>
           </div>
           
-          <div className="flex-1 pt-24">
-            <h1 className="text-xl md:text-2xl font-bold text-white">{movie.title}</h1>
+          <div className="flex-1 pt-16">
+            <h1 className="text-lg md:text-xl font-bold text-white">{movie.title}</h1>
             <div className="flex items-center gap-2 mt-1">
               <Star className="w-4 h-4 fill-primary text-primary" />
               <span className="text-white">{movie.rating.toFixed(1)}</span>
@@ -243,38 +245,38 @@ export function MovieDetailContent({ movieId, type }: MovieDetailContentProps) {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex gap-3 mt-6">
+        <div className="flex gap-2 mt-5">
           <Button
-            className="flex-1"
+            className="flex-1 h-10"
             style={{ backgroundColor: primaryColor, color: 'black' }}
             onClick={handleWatchNow}
           >
-            <Play className="w-4 h-4 mr-2" />
+            <Play className="w-4 h-4 mr-1.5" />
             Watch Now
           </Button>
           <Button
             variant="outline"
-            className="flex-1 border-primary text-primary hover:bg-primary/10"
+            className="flex-1 h-10 border-primary text-primary hover:bg-primary/10"
             onClick={handleDownload}
           >
-            <Download className="w-4 h-4 mr-2" />
+            <Download className="w-4 h-4 mr-1.5" />
             Download
           </Button>
         </div>
 
         {/* Download Warning */}
         {!allDownloadEnabled && (
-          <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 mt-4">
-            <p className="text-yellow-400 text-sm">
+          <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 mt-3">
+            <p className="text-yellow-400 text-xs">
               ⚠️ Enable &quot;All Download&quot; in Menu → Download to access download links
             </p>
           </div>
         )}
 
         {/* Synopsis */}
-        <div className="mt-6">
-          <h3 className="font-semibold mb-2" style={{ color: primaryColor }}>SYNOPSIS</h3>
-          <p className="text-gray-300 text-sm leading-relaxed">{movie.overview || 'No synopsis available.'}</p>
+        <div className="mt-5">
+          <h3 className="font-semibold mb-2 text-sm" style={{ color: primaryColor }}>SYNOPSIS</h3>
+          <p className="text-gray-300 text-xs leading-relaxed">{movie.overview || 'No synopsis available.'}</p>
         </div>
 
         {/* Series Episodes */}
@@ -337,30 +339,29 @@ export function MovieDetailContent({ movieId, type }: MovieDetailContentProps) {
 
         {/* Cast */}
         {movie.cast && movie.cast.length > 0 && (
-          <div className="mt-6">
-            <h3 className="font-semibold mb-3" style={{ color: primaryColor }}>CAST</h3>
+          <div className="mt-5">
+            <h3 className="font-semibold mb-2 text-sm" style={{ color: primaryColor }}>CAST</h3>
             <ScrollArea className="w-full">
-              <div className="flex gap-3 pb-2">
+              <div className="flex gap-2 pb-2">
                 {movie.cast.map(c => (
                   <div key={c.id} className="flex-shrink-0 text-center">
-                    <div className="w-14 h-14 md:w-16 md:h-16 rounded-full overflow-hidden bg-secondary">
+                    <div className="w-12 h-12 rounded-full overflow-hidden bg-secondary ring-1 ring-white/10">
                       {c.profileUrl ? (
                         <Image
                           src={c.profileUrl}
                           alt={c.name}
-                          width={64}
-                          height={64}
+                          width={48}
+                          height={48}
                           className="w-full h-full object-cover"
                           unoptimized
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <User className="w-5 h-5 text-gray-400" />
+                          <User className="w-4 h-4 text-gray-400" />
                         </div>
                       )}
                     </div>
-                    <p className="text-white text-[10px] md:text-xs mt-1 truncate w-14 md:w-16">{c.name}</p>
-                    <p className="text-gray-400 text-[10px] truncate w-14 md:w-16">{c.character}</p>
+                    <p className="text-white text-[9px] mt-1 truncate w-12">{c.name}</p>
                   </div>
                 ))}
               </div>

@@ -10,23 +10,26 @@ interface SeriesCardProps {
   series: Movie
   size?: 'xs' | 'sm' | 'md' | 'lg'
   showGenre?: boolean
+  fullWidth?: boolean  // For grid layouts
 }
 
-export function SeriesCard({ series, size = 'md', showGenre = false }: SeriesCardProps) {
+export function SeriesCard({ series, size = 'md', showGenre = false, fullWidth = false }: SeriesCardProps) {
   const seasonCount = series.series?.seasons?.length || 0
 
+  // For grid layouts, use w-full with aspect ratio
   const sizeClasses = {
-    xs: 'w-[100px]',
-    sm: 'w-[110px]',
-    md: 'w-[130px]',
-    lg: 'w-[160px]',
+    xs: fullWidth ? 'w-full' : 'w-[100px]',
+    sm: fullWidth ? 'w-full' : 'w-[110px]',
+    md: fullWidth ? 'w-full' : 'w-[130px]',
+    lg: fullWidth ? 'w-full' : 'w-[160px]',
   }
 
+  // Use aspect ratio for grid cards, fixed height for horizontal scroll
   const heightClasses = {
-    xs: 'h-[150px]',
-    sm: 'h-[165px]',
-    md: 'h-[195px]',
-    lg: 'h-[240px]',
+    xs: fullWidth ? 'aspect-[2/3]' : 'h-[150px]',
+    sm: fullWidth ? 'aspect-[2/3]' : 'h-[165px]',
+    md: fullWidth ? 'aspect-[2/3]' : 'h-[195px]',
+    lg: fullWidth ? 'aspect-[2/3]' : 'h-[240px]',
   }
 
   const titleSizeClasses = {
