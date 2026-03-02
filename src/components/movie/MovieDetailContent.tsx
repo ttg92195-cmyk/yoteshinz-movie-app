@@ -12,16 +12,13 @@ import {
   BookmarkCheck,
   User,
   Tv,
-  Edit,
-  Trash2,
   Clock,
   Calendar,
+  ExternalLink,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { SourcesModal } from '@/components/movie/SourcesModal'
 import { useAppStore, Movie } from '@/store'
 import { toast } from 'sonner'
 import { BottomNav } from '@/components/movie/BottomNav'
@@ -29,6 +26,15 @@ import { BottomNav } from '@/components/movie/BottomNav'
 interface MovieDetailContentProps {
   movieId: string
   type: 'movie' | 'series'
+}
+
+// Download link type
+interface DownloadLink {
+  id: string
+  quality: string
+  url: string
+  source: string
+  size?: string
 }
 
 export function MovieDetailContent({ movieId, type }: MovieDetailContentProps) {
@@ -44,9 +50,7 @@ export function MovieDetailContent({ movieId, type }: MovieDetailContentProps) {
 
   const [movie, setMovie] = useState<Movie | null>(null)
   const [loading, setLoading] = useState(true)
-  const [selectedSeason, setSelectedSeason] = useState(1)
-  const [showSources, setShowSources] = useState(false)
-  const [selectedLinks, setSelectedLinks] = useState<{ id: string; quality: string; url: string }[]>([])
+  const [activeTab, setActiveTab] = useState<'synopsis' | 'cast'>('synopsis')
 
   useEffect(() => {
     const fetchMovie = async () => {
@@ -85,27 +89,8 @@ export function MovieDetailContent({ movieId, type }: MovieDetailContentProps) {
     }
   }
 
-  const handleWatchNow = () => {
-    if (!movie) return
-    setSelectedLinks(movie.downloadLinks || [])
-    setShowSources(true)
-  }
-
-  const handleDownload = () => {
-    if (!movie) return
-    
-    if (!allDownloadEnabled) {
-      toast.error('Enable "All Download" in Menu → Download to access downloads')
-      return
-    }
-    
-    setSelectedLinks(movie.downloadLinks || [])
-    setShowSources(true)
-  }
-
   const handleDelete = async () => {
     if (!movie || !user?.isAdmin) return
-    
     if (!confirm('Are you sure you want to delete this?')) return
     
     try {
@@ -114,21 +99,6 @@ export function MovieDetailContent({ movieId, type }: MovieDetailContentProps) {
       router.push('/')
     } catch (error) {
       console.error('Delete error:', error)
-    }
-  }
-
-  const handleEpisodeClick = (episode: Movie['series'] extends { seasons: { episodes: infer E }[] }[] | null ? E : never) => {
-    if (!allDownloadEnabled) {
-      toast.error('Enable "All Download" in Menu → Download to access downloads')
-      return
-    }
-    
-    const links = episode?.downloadLinks || []
-    if (links.length > 0) {
-      setSelectedLinks(links)
-      setShowSources(true)
-    } else {
-      toast.info('No sources available for this episode')
     }
   }
 
@@ -148,14 +118,14 @@ export function MovieDetailContent({ movieId, type }: MovieDetailContentProps) {
     )
   }
 
-  const currentSeason = movie.series?.seasons?.find(s => s.seasonNumber === selectedSeason)
   const bookmarked = isBookmarked(movie.id)
   const genres = movie.genre ? movie.genre.split(', ').filter(Boolean) : []
+  const downloadLinks: DownloadLink[] = movie.downloadLinks || []
 
   return (
     <div className="min-h-screen bg-black pb-20">
       {/* Backdrop */}
-      <div className="relative w-full h-56">
+      <div className="relative w-full h-48">
         {movie.backdropUrl ? (
           <Image
             src={movie.backdropUrl}
@@ -168,7 +138,7 @@ export function MovieDetailContent({ movieId, type }: MovieDetailContentProps) {
         ) : (
           <div className="w-full h-full bg-gray-900" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent" />
         
         {/* Back Button */}
         <button
@@ -191,12 +161,11 @@ export function MovieDetailContent({ movieId, type }: MovieDetailContentProps) {
         </button>
       </div>
 
-      {/* Content */}
-      <div className="relative px-4 -mt-20">
-        {/* Poster and Info */}
+      {/* Poster & Info Section */}
+      <div className="relative px-4 -mt-24">
         <div className="flex gap-4">
           {/* Poster */}
-          <div className="w-[120px] flex-shrink-0">
+          <div className="w-[130px] flex-shrink-0">
             <div className="relative aspect-[2/3] rounded-xl overflow-hidden shadow-2xl ring-1 ring-white/10">
               {movie.posterUrl ? (
                 <Image
@@ -219,209 +188,172 @@ export function MovieDetailContent({ movieId, type }: MovieDetailContentProps) {
           </div>
           
           {/* Info */}
-          <div className="flex-1 pt-16 min-w-0">
+          <div className="flex-1 pt-28 min-w-0">
             <h1 className="text-xl font-bold text-white leading-tight line-clamp-2">{movie.title}</h1>
             
             <div className="flex items-center gap-2 mt-2">
-              <div className="flex items-center gap-1">
-                <Star className="w-4 h-4 fill-yellow-500 text-yellow-500" />
-                <span className="text-white font-medium">{movie.rating.toFixed(1)}</span>
+              <div className="flex items-center gap-1 bg-yellow-500/20 px-2 py-0.5 rounded">
+                <Star className="w-3.5 h-3.5 fill-yellow-500 text-yellow-500" />
+                <span className="text-yellow-500 font-bold text-sm">{movie.rating.toFixed(1)}</span>
               </div>
-              <span className="text-gray-500">•</span>
-              <span className="text-gray-300">{movie.year}</span>
+              <span className="text-gray-400 text-sm">{movie.year}</span>
               {movie.duration && (
                 <>
-                  <span className="text-gray-500">•</span>
-                  <span className="text-gray-300 flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    {movie.duration} min
-                  </span>
+                  <span className="text-gray-600">•</span>
+                  <span className="text-gray-400 text-sm">{movie.duration} min</span>
                 </>
               )}
             </div>
             
-            {/* Genres */}
+            {/* Genre Tags */}
             <div className="flex flex-wrap gap-1.5 mt-3">
-              {genres.slice(0, 3).map(g => (
-                <Badge 
-                  key={g} 
-                  variant="secondary" 
-                  className="text-[10px] px-2 py-0.5 bg-gray-800 text-gray-200 border-0"
+              {genres.map(g => (
+                <span
+                  key={g}
+                  className="px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-400"
                 >
                   {g}
-                </Badge>
+                </span>
               ))}
-              {movie.isSeries && movie.series && (
-                <Badge 
-                  variant="outline" 
-                  className="text-[10px] px-2 py-0.5"
-                  style={{ borderColor: primaryColor, color: primaryColor }}
-                >
-                  {movie.series.status}
-                </Badge>
-              )}
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Action Buttons */}
-        <div className="flex gap-3 mt-6">
-          <Button
-            className="flex-1 h-11 text-black font-semibold"
-            style={{ backgroundColor: primaryColor }}
-            onClick={handleWatchNow}
+      {/* Tabs */}
+      <div className="px-4 mt-6">
+        <div className="flex gap-1 bg-gray-900 rounded-lg p-1">
+          <button
+            onClick={() => setActiveTab('synopsis')}
+            className={`flex-1 py-2.5 rounded-md text-sm font-medium transition-all ${
+              activeTab === 'synopsis'
+                ? 'bg-gray-800 text-white'
+                : 'text-gray-400 hover:text-white'
+            }`}
           >
-            <Play className="w-4 h-4 mr-2 fill-current" />
-            Watch Now
-          </Button>
-          <Button
-            variant="outline"
-            className="flex-1 h-11 font-semibold"
-            style={{ borderColor: primaryColor, color: primaryColor }}
-            onClick={handleDownload}
+            Synopsis
+          </button>
+          <button
+            onClick={() => setActiveTab('cast')}
+            className={`flex-1 py-2.5 rounded-md text-sm font-medium transition-all ${
+              activeTab === 'cast'
+                ? 'bg-gray-800 text-white'
+                : 'text-gray-400 hover:text-white'
+            }`}
           >
-            <Download className="w-4 h-4 mr-2" />
-            Download
-          </Button>
+            Cast List
+          </button>
         </div>
+      </div>
 
-        {/* Download Warning */}
-        {!allDownloadEnabled && (
-          <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 mt-4">
-            <p className="text-yellow-400 text-xs">
-              ⚠️ Enable &quot;All Download&quot; in Menu → Download to access download links
+      {/* Tab Content */}
+      <div className="px-4 mt-4">
+        {activeTab === 'synopsis' ? (
+          <div>
+            <p className="text-gray-300 text-sm leading-relaxed">
+              {movie.overview || 'No synopsis available.'}
             </p>
           </div>
-        )}
-
-        {/* Synopsis */}
-        <div className="mt-6">
-          <h3 className="font-bold text-sm mb-2" style={{ color: primaryColor }}>SYNOPSIS</h3>
-          <p className="text-gray-300 text-sm leading-relaxed">{movie.overview || 'No synopsis available.'}</p>
-        </div>
-
-        {/* Series Episodes */}
-        {movie.isSeries && movie.series && movie.series.seasons && movie.series.seasons.length > 0 && (
-          <div className="mt-6">
-            <h3 className="font-bold text-sm mb-3" style={{ color: primaryColor }}>EPISODES</h3>
-            <div className="flex items-center gap-2 mb-4">
-              <span className="text-gray-400 text-sm">Season:</span>
-              <Select value={selectedSeason.toString()} onValueChange={(v) => setSelectedSeason(parseInt(v))}>
-                <SelectTrigger className="w-28 bg-gray-800 border-white/10 h-9 text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {movie.series.seasons.map(s => (
-                    <SelectItem key={s.id} value={s.seasonNumber.toString()}>
-                      Season {s.seasonNumber}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            {currentSeason && currentSeason.episodes && (
-              <div className="grid grid-cols-4 gap-2">
-                {currentSeason.episodes.map(ep => (
-                  <div
-                    key={ep.id}
-                    className="bg-gray-800 rounded-lg overflow-hidden cursor-pointer hover:bg-gray-700 active:scale-95 transition-transform"
-                    onClick={() => handleEpisodeClick(ep as never)}
-                  >
-                    <div className="relative aspect-video">
-                      {ep.thumbnailUrl ? (
-                        <Image
-                          src={ep.thumbnailUrl}
-                          alt={ep.title}
-                          fill
-                          className="object-cover"
-                          unoptimized
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-gray-700 flex items-center justify-center">
-                          <Play className="w-5 h-5 text-gray-500" />
-                        </div>
-                      )}
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm">
-                          <Play className="w-4 h-4 text-white fill-white" />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="p-1.5 text-center">
-                      <p className="text-white text-[10px] font-medium">EP {ep.episodeNumber}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Cast */}
-        {movie.cast && movie.cast.length > 0 && (
-          <div className="mt-6">
-            <h3 className="font-bold text-sm mb-3" style={{ color: primaryColor }}>CAST</h3>
-            <ScrollArea className="w-full">
-              <div className="flex gap-3 pb-2">
+        ) : (
+          <div>
+            {movie.cast && movie.cast.length > 0 ? (
+              <div className="grid grid-cols-3 gap-3">
                 {movie.cast.map(c => (
-                  <div key={c.id} className="flex-shrink-0 text-center">
-                    <div className="w-14 h-14 rounded-full overflow-hidden bg-gray-800 ring-1 ring-white/10">
+                  <div key={c.id} className="text-center">
+                    <div className="w-16 h-16 mx-auto rounded-full overflow-hidden bg-gray-800 ring-1 ring-white/10">
                       {c.profileUrl ? (
                         <Image
                           src={c.profileUrl}
                           alt={c.name}
-                          width={56}
-                          height={56}
+                          width={64}
+                          height={64}
                           className="w-full h-full object-cover"
                           unoptimized
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <User className="w-5 h-5 text-gray-600" />
+                          <User className="w-6 h-6 text-gray-600" />
                         </div>
                       )}
                     </div>
-                    <p className="text-white text-[10px] mt-1 truncate w-14">{c.name}</p>
-                    <p className="text-gray-500 text-[9px] truncate w-14">{c.character}</p>
+                    <p className="text-white text-xs mt-2 truncate">{c.name}</p>
+                    <p className="text-gray-500 text-[10px] truncate">{c.character}</p>
                   </div>
                 ))}
               </div>
-            </ScrollArea>
-          </div>
-        )}
-
-        {/* Admin Actions */}
-        {user?.isAdmin && (
-          <div className="flex gap-2 mt-6 pt-4 border-t border-white/10">
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex-1 border-white/20 text-white hover:bg-white/10"
-            >
-              <Edit className="w-4 h-4 mr-1.5" />
-              Edit
-            </Button>
-            <Button
-              variant="destructive"
-              size="sm"
-              className="flex-1"
-              onClick={handleDelete}
-            >
-              <Trash2 className="w-4 h-4 mr-1.5" />
-              Delete
-            </Button>
+            ) : (
+              <p className="text-gray-400 text-center py-8">No cast information available</p>
+            )}
           </div>
         )}
       </div>
 
-      {/* Sources Modal */}
-      <SourcesModal
-        open={showSources}
-        onOpenChange={setShowSources}
-        downloadLinks={selectedLinks}
-        title={movie.title}
-      />
+      {/* Download Warning */}
+      {!allDownloadEnabled && (
+        <div className="px-4 mt-6">
+          <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3">
+            <p className="text-yellow-400 text-xs">
+              ⚠️ Enable &quot;All Download&quot; in Menu → Download to access download links
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Download Table */}
+      {allDownloadEnabled && downloadLinks.length > 0 && (
+        <div className="px-4 mt-6">
+          <h3 className="font-bold text-sm mb-3" style={{ color: primaryColor }}>DOWNLOAD</h3>
+          <div className="bg-gray-900 rounded-lg overflow-hidden">
+            {/* Table Header */}
+            <div className="grid grid-cols-3 bg-gray-800 text-xs font-medium text-gray-300">
+              <div className="px-3 py-2.5">Server</div>
+              <div className="px-3 py-2.5 text-center">Quality</div>
+              <div className="px-3 py-2.5 text-center">Action</div>
+            </div>
+            {/* Table Rows */}
+            {downloadLinks.map((link, index) => (
+              <div 
+                key={link.id} 
+                className={`grid grid-cols-3 text-sm ${index % 2 === 0 ? 'bg-gray-900' : 'bg-gray-900/50'}`}
+              >
+                <div className="px-3 py-3 text-white font-medium">{link.source || `Server ${index + 1}`}</div>
+                <div className="px-3 py-3 text-center">
+                  <span className="bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded text-xs font-medium">
+                    {link.quality}
+                  </span>
+                </div>
+                <div className="px-3 py-3 text-center">
+                  <a
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium text-black"
+                    style={{ backgroundColor: primaryColor }}
+                  >
+                    <Download className="w-3 h-3" />
+                    Download
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Admin Actions */}
+      {user?.isAdmin && (
+        <div className="px-4 mt-6 flex gap-2">
+          <button className="flex-1 py-2.5 rounded-lg bg-gray-800 text-white text-sm font-medium">
+            Edit
+          </button>
+          <button 
+            onClick={handleDelete}
+            className="flex-1 py-2.5 rounded-lg bg-red-500/20 text-red-400 text-sm font-medium"
+          >
+            Delete
+          </button>
+        </div>
+      )}
 
       <BottomNav />
     </div>
