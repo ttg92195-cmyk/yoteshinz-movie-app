@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useAppStore, Movie } from '@/store'
 import { 
@@ -75,7 +76,7 @@ const SAMPLE_MOVIES: Movie[] = [
   {
     id: '3',
     title: 'Interstellar',
-    overview: 'The adventures of a group of explorers who make use of a newly discovered wormhole to surpass the limitations on human space travel and conquer the vast distances involved in an interstellar voyage.',
+    overview: 'The adventures of a group of explorers who make use of a newly discovered wormhole to surpass the limitations on human space travel.',
     posterUrl: 'https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg',
     backdropUrl: 'https://image.tmdb.org/t/p/original/xJHokMbljvjADYdit5fK5VQsXEG.jpg',
     rating: 8.7,
@@ -99,7 +100,7 @@ const SAMPLE_MOVIES: Movie[] = [
   {
     id: '4',
     title: 'Breaking Bad',
-    overview: 'When Walter White, a New Mexico chemistry teacher, is diagnosed with Stage III cancer and given a prognosis of only two years left to live, he becomes filled with a sense of fearlessness and an unrelenting desire to secure his family\'s financial future.',
+    overview: 'When Walter White, a New Mexico chemistry teacher, is diagnosed with Stage III cancer.',
     posterUrl: 'https://image.tmdb.org/t/p/w500/ggFHVNu6YYI5L9pCfOacjizRGt.jpg',
     backdropUrl: 'https://image.tmdb.org/t/p/original/tsRy63Mu5cu8etL1X7ZLyf7UP1M.jpg',
     rating: 9.0,
@@ -111,10 +112,7 @@ const SAMPLE_MOVIES: Movie[] = [
     isFeatured: false,
     isTrending: true,
     isIconic: true,
-    cast: [
-      { id: 'c7', name: 'Bryan Cranston', character: 'Walter White', profileUrl: 'https://image.tmdb.org/t/p/w185/7JahXtJdKZD6YW6Lp5RlQf7t9Q5.jpg' },
-      { id: 'c8', name: 'Aaron Paul', character: 'Jesse Pinkman', profileUrl: 'https://image.tmdb.org/t/p/w185/uIPtWeJw6QPrDJZzC3NbK9vPmoY.jpg' },
-    ],
+    cast: [],
     downloadLinks: [],
     series: {
       id: 's1',
@@ -128,7 +126,7 @@ const SAMPLE_MOVIES: Movie[] = [
   {
     id: '5',
     title: 'Game of Thrones',
-    overview: 'Seven noble families fight for control of the mythical land of Westeros. Friction between the houses leads to full-scale war.',
+    overview: 'Seven noble families fight for control of the mythical land of Westeros.',
     posterUrl: 'https://image.tmdb.org/t/p/w500/1XS1oqL89opfnbLl8WnZY1O1uJx.jpg',
     backdropUrl: 'https://image.tmdb.org/t/p/original/suopoADq0k8YZr4dQXcU6pToj6s.jpg',
     rating: 8.5,
@@ -140,10 +138,7 @@ const SAMPLE_MOVIES: Movie[] = [
     isFeatured: false,
     isTrending: true,
     isIconic: false,
-    cast: [
-      { id: 'c9', name: 'Emilia Clarke', character: 'Daenerys Targaryen', profileUrl: 'https://image.tmdb.org/t/p/w185/j7d083zIMhwnKro3tQqDz2Fq1QT.jpg' },
-      { id: 'c10', name: 'Kit Harington', character: 'Jon Snow', profileUrl: 'https://image.tmdb.org/t/p/w185/5J3H7mq3QWi34QaDQWzXJmJk1Ym.jpg' },
-    ],
+    cast: [],
     downloadLinks: [],
     series: {
       id: 's2',
@@ -157,7 +152,7 @@ const SAMPLE_MOVIES: Movie[] = [
   {
     id: '6',
     title: 'Stranger Things',
-    overview: 'When a young boy vanishes, a small town uncovers a mystery involving secret experiments, terrifying supernatural forces, and one strange little girl.',
+    overview: 'When a young boy vanishes, a small town uncovers a mystery.',
     posterUrl: 'https://image.tmdb.org/t/p/w500/49WJfeN0moxb9IPfGn8AIqMGskD.jpg',
     backdropUrl: 'https://image.tmdb.org/t/p/original/56v2KjBlU4XaOv9rVYEQypROD7P.jpg',
     rating: 8.6,
@@ -169,10 +164,7 @@ const SAMPLE_MOVIES: Movie[] = [
     isFeatured: false,
     isTrending: true,
     isIconic: false,
-    cast: [
-      { id: 'c11', name: 'Millie Bobby Brown', character: 'Eleven', profileUrl: 'https://image.tmdb.org/t/p/w185/hM04Z7qYDeqw2x3SM6dVxuL6QwD.jpg' },
-      { id: 'c12', name: 'Finn Wolfhard', character: 'Mike Wheeler', profileUrl: 'https://image.tmdb.org/t/p/w185/7mDG7nGgnNo2r2sWqwMq2qNXPFP.jpg' },
-    ],
+    cast: [],
     downloadLinks: [],
     series: {
       id: 's3',
@@ -186,7 +178,7 @@ const SAMPLE_MOVIES: Movie[] = [
   {
     id: '7',
     title: 'Avatar',
-    overview: 'In the 22nd century, a paraplegic Marine is dispatched to the moon Pandora on a unique mission, but becomes torn between following his orders and protecting the world he feels is his home.',
+    overview: 'In the 22nd century, a paraplegic Marine is dispatched to the moon Pandora.',
     posterUrl: 'https://image.tmdb.org/t/p/w500/kyeqWdyUXW608qlYkRqosbbVrny.jpg',
     backdropUrl: 'https://image.tmdb.org/t/p/original/s16H6tpK2utvwDtzZ8Qy4qm5Emw.jpg',
     rating: 7.6,
@@ -198,10 +190,7 @@ const SAMPLE_MOVIES: Movie[] = [
     isFeatured: false,
     isTrending: true,
     isIconic: false,
-    cast: [
-      { id: 'c13', name: 'Sam Worthington', character: 'Jake Sully', profileUrl: 'https://image.tmdb.org/t/p/w185/kZCXMVZt9qI7xxj9rt6zJQn8tqD.jpg' },
-      { id: 'c14', name: 'Zoe Saldana', character: 'Neytiri', profileUrl: 'https://image.tmdb.org/t/p/w185/bP4lzFsP2B9q0Lq3c3qM7Nq0B5r.jpg' },
-    ],
+    cast: [],
     downloadLinks: [
       { id: 'd7', quality: '720p', url: '#', source: 'Server-1' },
       { id: 'd8', quality: '1080p', url: '#', source: 'Server-1' },
@@ -222,10 +211,7 @@ const SAMPLE_MOVIES: Movie[] = [
     isFeatured: false,
     isTrending: false,
     isIconic: true,
-    cast: [
-      { id: 'c15', name: 'Hugh Jackman', character: 'Robert Angier', profileUrl: 'https://image.tmdb.org/t/p/w185/nRNn2JNmU6nyEi6KsCLNWLJxa6D.jpg' },
-      { id: 'c16', name: 'Christian Bale', character: 'Alfred Borden', profileUrl: 'https://image.tmdb.org/t/p/w185/qCpZn2e3dimwbryLnqxZuI88PTi.jpg' },
-    ],
+    cast: [],
     downloadLinks: [
       { id: 'd9', quality: '720p', url: '#', source: 'Server-1' },
       { id: 'd10', quality: '1080p', url: '#', source: 'Server-1' },
@@ -421,6 +407,10 @@ function HorizontalSection({
 }
 
 export default function HomePage() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const pageParam = searchParams.get('page')
+  
   const { 
     currentPage, setCurrentPage,
     sidebarOpen, setSidebarOpen,
@@ -441,14 +431,22 @@ export default function HomePage() {
   const [isLoggingIn, setIsLoggingIn] = useState(false)
   const [isSeeding, setIsSeeding] = useState(false)
   
-
+  // Sync currentPage with URL param
+  useEffect(() => {
+    if (pageParam === 'search') {
+      setCurrentPage('search')
+    } else if (currentPage === 'search' && pageParam !== 'search') {
+      // If we're on search page but URL doesn't have ?page=search, go home
+      setCurrentPage('home')
+    }
+  }, [pageParam, setCurrentPage, currentPage])
 
   // Settings State
   const [showSettings, setShowSettings] = useState(false)
   const [settingsColor, setSettingsColor] = useState(primaryColor)
   const [settingsHeaderText, setSettingsHeaderText] = useState(headerText)
 
-  // Derived state - categorize movies properly
+  // Derived state
   const trendingMovies = useMemo(() => movies.filter((m: Movie) => m.isTrending && !m.isSeries), [movies])
   const trendingSeries = useMemo(() => movies.filter((m: Movie) => m.isTrending && m.isSeries), [movies])
   const moviesOnly = useMemo(() => movies.filter((m: Movie) => !m.isSeries), [movies])
@@ -463,12 +461,10 @@ export default function HomePage() {
       if (data.success && data.data && data.data.length > 0) {
         setMovies(data.data)
       } else {
-        // Use sample data if database is empty (for Vercel)
         setMovies(SAMPLE_MOVIES)
       }
     } catch (error) {
       console.error('Failed to fetch movies:', error)
-      // Use sample data on error (for Vercel)
       setMovies(SAMPLE_MOVIES)
     }
   }, [])
@@ -526,8 +522,6 @@ export default function HomePage() {
     return () => clearTimeout(timer)
   }, [searchQuery, movies])
 
-
-
   // Handle login
   const handleLogin = useCallback(async () => {
     if (!loginUsername.trim() || !loginPassword.trim()) {
@@ -553,8 +547,6 @@ export default function HomePage() {
     }
   }, [login, loginUsername, loginPassword])
 
-
-
   // Save settings
   const saveSettings = useCallback(async () => {
     try {
@@ -576,6 +568,16 @@ export default function HomePage() {
     }
   }, [settingsColor, settingsHeaderText, setPrimaryColor, setHeaderText])
 
+  // Handle search click - navigate to search URL
+  const handleSearchClick = () => {
+    router.push('/?page=search')
+  }
+
+  // Handle close search - navigate back to home
+  const handleCloseSearch = () => {
+    router.push('/')
+  }
+
   // Render page content
   const renderPageContent = () => {
     // Search page
@@ -583,7 +585,7 @@ export default function HomePage() {
       return (
         <div className="p-4">
           <div className="flex items-center gap-3 mb-6">
-            <button onClick={() => setCurrentPage('home')} className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
+            <button onClick={handleCloseSearch} className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
               <X className="w-5 h-5" />
             </button>
             <h1 className="text-xl font-bold text-white">Search</h1>
@@ -649,34 +651,34 @@ export default function HomePage() {
         {/* Trending Series */}
         {trendingSeries.length > 0 && (
           <HorizontalSection 
-                title="Trending Series" 
-                items={trendingSeries}
-                seeAllHref="/series"
-                type="series"
-              />
-            )}
+            title="Trending Series" 
+            items={trendingSeries}
+            seeAllHref="/series"
+            type="series"
+          />
+        )}
 
-            {/* Movies */}
-            {moviesOnly.length > 0 && (
-              <HorizontalSection 
-                title="Movies" 
-                items={moviesOnly}
-                seeAllHref="/movies"
-                type="movie"
-              />
-            )}
+        {/* Movies */}
+        {moviesOnly.length > 0 && (
+          <HorizontalSection 
+            title="Movies" 
+            items={moviesOnly}
+            seeAllHref="/movies"
+            type="movie"
+          />
+        )}
 
-            {/* Series */}
-            {seriesOnly.length > 0 && (
-              <HorizontalSection 
-                title="Series" 
-                items={seriesOnly}
-                seeAllHref="/series"
-                type="series"
-              />
-            )}
-          </div>
-        )
+        {/* Series */}
+        {seriesOnly.length > 0 && (
+          <HorizontalSection 
+            title="Series" 
+            items={seriesOnly}
+            seeAllHref="/series"
+            type="series"
+          />
+        )}
+      </div>
+    )
   }
 
   return (
@@ -692,7 +694,7 @@ export default function HomePage() {
           </button>
           <h1 className="text-lg font-bold text-white">{headerText}</h1>
           <button 
-            onClick={() => setCurrentPage('search')}
+            onClick={handleSearchClick}
             className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center"
           >
             <Search className="w-5 h-5" />
