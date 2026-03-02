@@ -4,9 +4,9 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import Link from 'next/link'
 import { useAppStore, Movie } from '@/store'
 import { 
-  Film, Search, Menu, X, Download, Star, 
+  Film, Search, Menu, X, Download, 
   Bookmark, Settings, User, LogOut, ChevronRight, 
-  Eye, EyeOff, Loader2, RefreshCw
+  Eye, EyeOff, Loader2, RefreshCw, Home, Tv, Grid
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -245,32 +245,25 @@ function SidebarMenu({
   onLoginClick: () => void
   onSettingsClick: () => void
 }) {
-  const { user, logout, setCurrentPage, allDownloadEnabled } = useAppStore()
+  const { user, logout, allDownloadEnabled } = useAppStore()
 
   const handleLogout = () => {
     logout()
     onOpenChange(false)
   }
 
-  const handleNavigate = (page: string) => {
-    setCurrentPage(page as 'home' | 'movies' | 'series' | 'search' | 'download' | 'bookmark' | 'genres' | 'account')
-    onOpenChange(false)
-  }
-
+  // Menu items with Link navigation
   const menuItems = [
-    { icon: User, label: 'Account', action: () => handleNavigate('account') },
-    { icon: Bookmark, label: 'Bookmark', action: () => handleNavigate('bookmark') },
-    { 
-      icon: Download, 
-      label: 'Download', 
-      action: () => handleNavigate('download'),
-      badge: allDownloadEnabled ? 'ON' : 'OFF'
-    },
-    { icon: Film, label: 'Genres', action: () => handleNavigate('genres') },
+    { icon: Home, label: 'Home', href: '/' },
+    { icon: Film, label: 'Movies', href: '/movies' },
+    { icon: Tv, label: 'Series', href: '/series' },
+    { icon: Bookmark, label: 'Bookmark', href: '/bookmark' },
+    { icon: Download, label: 'Download', href: '/download', badge: allDownloadEnabled ? 'ON' : 'OFF' },
+    { icon: Grid, label: 'Genres', href: '/genres' },
     { icon: Settings, label: 'Settings', action: () => { onOpenChange(false); onSettingsClick() } },
   ]
 
-  // TMDB Generator link for admin - rendered separately with Link component
+  // TMDB Generator link for admin
   const tmdbMenuItem = user?.isAdmin ? (
     <Link
       href="/tmdb"
@@ -309,10 +302,29 @@ function SidebarMenu({
           <div className="space-y-1">
             {menuItems.map((item, i) => {
               const Icon = item.icon
+              
+              // Settings has custom action, others use Link
+              if (item.action) {
+                return (
+                  <button
+                    key={i}
+                    onClick={item.action}
+                    className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-white/5 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Icon className="w-5 h-5 text-gray-400" />
+                      <span className="text-white">{item.label}</span>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-gray-500" />
+                  </button>
+                )
+              }
+              
               return (
-                <button
+                <Link
                   key={i}
-                  onClick={item.action}
+                  href={item.href!}
+                  onClick={() => onOpenChange(false)}
                   className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-white/5 transition-colors"
                 >
                   <div className="flex items-center gap-3">
@@ -327,7 +339,7 @@ function SidebarMenu({
                     )}
                     <ChevronRight className="w-4 h-4 text-gray-500" />
                   </div>
-                </button>
+                </Link>
               )
             })}
             
@@ -566,176 +578,77 @@ export default function HomePage() {
 
   // Render page content
   const renderPageContent = () => {
-    switch (currentPage) {
-      case 'search':
-        return (
-          <div className="p-4">
-            <div className="flex items-center gap-3 mb-6">
-              <button onClick={() => setCurrentPage('home')} className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
-                <X className="w-5 h-5" />
-              </button>
-              <h1 className="text-xl font-bold text-white">Search</h1>
-            </div>
-            
-            <div className="relative mb-6">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <Input 
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search something..."
-                className="pl-10 bg-secondary border-white/10"
-              />
-            </div>
-
-            {searchQuery && searchResults.length > 0 && (
-              <div className="grid grid-cols-3 gap-2">
-                {searchResults.map(movie => (
-                  movie.isSeries ? (
-                    <SeriesCard key={movie.id} series={movie} showGenre />
-                  ) : (
-                    <MovieCard key={movie.id} movie={movie} showGenre />
-                  )
-                ))}
-              </div>
-            )}
-
-            {searchQuery && searchResults.length === 0 && (
-              <div className="text-center py-12">
-                <Search className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                <p className="text-gray-400">No results found for &quot;{searchQuery}&quot;</p>
-              </div>
-            )}
-
-            {!searchQuery && (
-              <div className="text-center py-12">
-                <Search className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                <p className="text-gray-400">Search for movies and series</p>
-              </div>
-            )}
+    // Search page
+    if (currentPage === 'search') {
+      return (
+        <div className="p-4">
+          <div className="flex items-center gap-3 mb-6">
+            <button onClick={() => setCurrentPage('home')} className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
+              <X className="w-5 h-5" />
+            </button>
+            <h1 className="text-xl font-bold text-white">Search</h1>
           </div>
-        )
-
-      case 'download':
-        return (
-          <div className="p-4">
-            <h1 className="text-xl font-bold text-white mb-4">Downloads</h1>
-            
-            <div className="bg-secondary rounded-lg p-4 mb-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-white font-medium">All Download</p>
-                  <p className="text-gray-400 text-sm">Enable to show download links in posts</p>
-                </div>
-                <Switch 
-                  checked={allDownloadEnabled}
-                  onCheckedChange={setAllDownloadEnabled}
-                />
-              </div>
-            </div>
-
-            <div className="text-center py-8">
-              <Download className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-              <p className="text-gray-400">
-                {allDownloadEnabled ? 'No downloads yet' : 'Enable All Download to access downloads'}
-              </p>
-            </div>
+          
+          <div className="relative mb-6">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Input 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search something..."
+              className="pl-10 bg-secondary border-white/10"
+            />
           </div>
-        )
 
-      case 'bookmark':
-        return (
-          <div className="p-4">
-            <h1 className="text-xl font-bold text-white mb-4">Bookmarks</h1>
-            <div className="text-center py-8">
-              <Bookmark className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-              <p className="text-gray-400">No bookmarks yet</p>
-            </div>
-          </div>
-        )
-
-      case 'genres':
-        return (
-          <div className="p-4">
-            <h1 className="text-xl font-bold text-white mb-4">Genres</h1>
-            <div className="grid grid-cols-2 gap-3">
-              {allGenres.map(genre => (
-                <button
-                  key={genre}
-                  className="bg-secondary rounded-lg p-4 text-left hover:bg-secondary/80 transition-colors"
-                >
-                  <p className="text-white">{genre}</p>
-                </button>
+          {searchQuery && searchResults.length > 0 && (
+            <div className="grid grid-cols-3 gap-2">
+              {searchResults.map(movie => (
+                movie.isSeries ? (
+                  <SeriesCard key={movie.id} series={movie} showGenre />
+                ) : (
+                  <MovieCard key={movie.id} movie={movie} showGenre />
+                )
               ))}
             </div>
-          </div>
-        )
+          )}
 
-      case 'account':
-        return (
-          <div className="p-4">
-            <h1 className="text-xl font-bold text-white mb-4">Account</h1>
-            
-            {user ? (
-              <div className="space-y-4">
-                <div className="bg-secondary rounded-lg p-4">
-                  <h3 className="text-white font-medium mb-3">Account Information</h3>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Account Name</span>
-                      <span className="text-white">{user.username}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Status</span>
-                      <span className="text-white">{user.isAdmin ? 'Admin' : user.isPremium ? 'Premium' : 'Not Premium'}</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <Button 
-                  variant="destructive"
-                  className="w-full"
-                  onClick={() => { logout(); setCurrentPage('home') }}
-                >
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Logout
-                </Button>
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <User className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                <p className="text-gray-400 mb-4">Please login to view account</p>
-                <Button 
-                  style={{ backgroundColor: primaryColor, color: 'black' }}
-                  onClick={() => setShowLogin(true)}
-                >
-                  Login
-                </Button>
-              </div>
-            )}
-          </div>
-        )
+          {searchQuery && searchResults.length === 0 && (
+            <div className="text-center py-12">
+              <Search className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+              <p className="text-gray-400">No results found for &quot;{searchQuery}&quot;</p>
+            </div>
+          )}
 
-      default: // home
-        return (
-          <div className="pb-20">
-            {/* Hero Banner */}
-            {trendingMovies.length > 0 && (
-              <HeroBanner movies={trendingMovies} />
-            )}
+          {!searchQuery && (
+            <div className="text-center py-12">
+              <Search className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+              <p className="text-gray-400">Search for movies and series</p>
+            </div>
+          )}
+        </div>
+      )
+    }
 
-            {/* Trending Movies */}
-            {trendingMovies.length > 0 && (
-              <HorizontalSection 
-                title="Trending Movies" 
-                items={trendingMovies}
-                seeAllHref="/movies"
-                type="movie"
-              />
-            )}
+    // Home page (default)
+    return (
+      <div className="pb-20">
+        {/* Hero Banner */}
+        {trendingMovies.length > 0 && (
+          <HeroBanner movies={trendingMovies} />
+        )}
 
-            {/* Trending Series */}
-            {trendingSeries.length > 0 && (
-              <HorizontalSection 
+        {/* Trending Movies */}
+        {trendingMovies.length > 0 && (
+          <HorizontalSection 
+            title="Trending Movies" 
+            items={trendingMovies}
+            seeAllHref="/movies"
+            type="movie"
+          />
+        )}
+
+        {/* Trending Series */}
+        {trendingSeries.length > 0 && (
+          <HorizontalSection 
                 title="Trending Series" 
                 items={trendingSeries}
                 seeAllHref="/series"
@@ -764,7 +677,6 @@ export default function HomePage() {
             )}
           </div>
         )
-    }
   }
 
   return (
@@ -856,9 +768,6 @@ export default function HomePage() {
                 'Login'
               )}
             </Button>
-            <p className="text-gray-500 text-xs text-center">
-              Admin: Admin8676 / Admin8676
-            </p>
           </div>
         </DialogContent>
       </Dialog>
