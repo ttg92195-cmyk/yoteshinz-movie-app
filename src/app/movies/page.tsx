@@ -246,7 +246,7 @@ export default function MoviesPage() {
             </p>
             <div className="grid grid-cols-3 gap-2">
               {filteredMovies.map(movie => (
-                <MovieCard key={movie.id} movie={movie} size="xs" showGenre fullWidth />
+                <MovieCard key={movie.id} movie={movie} showGenre />
               ))}
             </div>
           </>

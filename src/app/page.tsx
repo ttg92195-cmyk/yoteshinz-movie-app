@@ -375,13 +375,13 @@ function HorizontalSection({
   const primaryColor = useAppStore((state) => state.primaryColor)
   
   return (
-    <div className="px-4 mt-6">
-      <div className="flex justify-between items-center mb-3">
-        <h2 className="text-base font-bold text-white">{title}</h2>
+    <div className="mt-5">
+      <div className="flex justify-between items-center mb-2 px-3">
+        <h2 className="text-sm font-bold text-white">{title}</h2>
         {seeAllHref && (
           <Link 
             href={seeAllHref}
-            className="text-xs px-3 py-1 rounded-full transition-colors"
+            className="text-[10px] px-2 py-0.5 rounded"
             style={{ 
               color: primaryColor,
               backgroundColor: `${primaryColor}20`
@@ -391,17 +391,19 @@ function HorizontalSection({
           </Link>
         )}
       </div>
-      <ScrollArea className="w-full">
-        <div className="flex gap-3 pb-2" style={{ width: 'max-content' }}>
-          {items.slice(0, 10).map(item => (
-            type === 'series' ? (
-              <SeriesCard key={item.id} series={item} size="sm" showGenre />
-            ) : (
-              <MovieCard key={item.id} movie={item} size="sm" showGenre />
-            )
+      <div className="overflow-x-auto scrollbar-hide">
+        <div className="flex gap-2 px-3 pb-1" style={{ width: 'max-content' }}>
+          {items.slice(0, 15).map(item => (
+            <div key={item.id} className="w-[calc(33.33vw-12px)] flex-shrink-0">
+              {type === 'series' ? (
+                <SeriesCard series={item} showGenre />
+              ) : (
+                <MovieCard movie={item} showGenre />
+              )}
+            </div>
           ))}
         </div>
-      </ScrollArea>
+      </div>
     </div>
   )
 }
@@ -589,9 +591,9 @@ export default function HomePage() {
               <div className="grid grid-cols-3 gap-2">
                 {searchResults.map(movie => (
                   movie.isSeries ? (
-                    <SeriesCard key={movie.id} series={movie} size="xs" showGenre fullWidth />
+                    <SeriesCard key={movie.id} series={movie} showGenre />
                   ) : (
-                    <MovieCard key={movie.id} movie={movie} size="xs" showGenre fullWidth />
+                    <MovieCard key={movie.id} movie={movie} showGenre />
                   )
                 ))}
               </div>

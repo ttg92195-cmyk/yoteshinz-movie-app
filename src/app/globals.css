@@ -148,11 +148,13 @@
 }
 
 /* Hide scrollbar for horizontal scroll */
-.hide-scrollbar::-webkit-scrollbar {
+.hide-scrollbar::-webkit-scrollbar,
+.scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
 
-.hide-scrollbar {
+.hide-scrollbar,
+.scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }

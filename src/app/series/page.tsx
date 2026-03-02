@@ -217,7 +217,7 @@ export default function SeriesPage() {
             </p>
             <div className="grid grid-cols-3 gap-2">
               {filteredSeries.map(s => (
-                <SeriesCard key={s.id} series={s} size="xs" showGenre fullWidth />
+                <SeriesCard key={s.id} series={s} showGenre />
               ))}
             </div>
           </>
